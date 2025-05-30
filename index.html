@@ -5,6 +5,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Journal</title>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3367D6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 
   <!-- Primary CDN scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -380,5 +384,14 @@
       window.app = new JournalApp();
     });
   </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service worker registered.', reg))
+        .catch(err => console.log('Service worker registration failed:', err));
+    });
+  }
+</script>
 </body>
 </html>
