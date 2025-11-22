@@ -62,7 +62,7 @@ async function loadJournalsFromFirebase() {
 
 
 /* ===============================
-   4. CONNECT TO YOUR SAVE BUTTON
+   4. CONNECT TO SAVE BUTTON
 ================================*/
 
 document.getElementById("saveBtn").addEventListener("click", () => {
@@ -80,11 +80,14 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   // Clear after saving
   document.getElementById("titleInput").value = "";
   document.getElementById("contentTextarea").value = "";
+
+  // Reload journals to show the new one
+  loadJournalsFromFirebase();
 });
 
 
 /* ===============================
-   5. LOAD ENTRIES ON PAGE LOAD
+   5. LOAD JOURNALS ON PAGE LOAD
 ================================*/
 
 window.onload = () => {
