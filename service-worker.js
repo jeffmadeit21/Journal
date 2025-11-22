@@ -1,38 +1,59 @@
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/Journal/service-worker.js')
-        .then(reg => console.log('Service Worker registered!', reg))
-        .catch(err => console.log('Service Worker registration failed:', err));
-    });
-  }
+// Your Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyABzc3PolF7g-lKxD4k5zSJ6nLy00Ht5KA",
+  authDomain: "journal-app-82186.firebaseapp.com",
+  projectId: "journal-app-82186",
+  storageBucket: "journal-app-82186.firebasestorage.app",
+  messagingSenderId: "487287603216",
+  appId: "1:487287603216:web:0a079be3488fb638800a95",
+  measurementId: "G-SBP78JBDMG"
+};
 
-  // LocalStorage-based journal saving
-  const textarea = document.getElementById('entryText');
-  const entries = document.getElementById('entries');
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  // Load saved entries
-  window.onload = () => {
-    const saved = JSON.parse(localStorage.getItem('journalEntries') || '[]');
-    saved.forEach(text => {
-      const p = document.createElement('p');
-      p.textContent = text;
-      entries.appendChild(p);
-    });
-  };
 
-  function saveEntry() {
-    const text = textarea.value.trim();
-    if (text !== '') {
-      const p = document.createElement('p');
-      p.textContent = text;
-      entries.appendChild(p);
-      textarea.value = '';
+// SAVE JOURNAL
+async function saveJournal(title, content) {
+  await db.collection("journals").add({
+    title: title,
+    content: content,
+    createdAt: new Date()
+  });
 
-      // Save to localStorage
-      const saved = JSON.parse(localStorage.getItem('journalEntries') || '[]');
-      saved.push(text);
-      localStorage.setItem('journalEntries', JSON.stringify(saved));
-    }
-  }
-</script>
+  alert("Journal saved!");
+}
+
+
+// LOAD JOURNALS
+async function loadJournals() {
+  const snapshot = await db.collection("journals")
+    .orderBy("createdAt", "desc")
+    .get();
+
+  let html = "";
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    html += `
+      <div class="entry">
+        <h3>${data.title}</h3>
+        <p>${data.content}</p>
+        <small>${data.createdAt.toDate().toLocaleString()}</small>
+      </div>
+    `;
+  });
+
+  document.getElementById("journalList").innerHTML = html;
+}
+
+
+// LISTEN TO FORM
+document.getElementById("journalForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById("title").value;
+  const content = document.getElementById("content").value;
+
+  saveJournal(title, content);
+});
