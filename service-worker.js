@@ -1,33 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Journal</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
-    input, textarea { width: 100%; margin-bottom: 10px; padding: 10px; }
-    button { padding: 10px 20px; cursor: pointer; }
-    .entry { border:1px solid #ccc; padding:10px; margin-bottom:10px; }
-  </style>
-</head>
-<body>
+/* ===============================
+   1. FIREBASE INITIALIZATION
+================================*/
 
-  <h1>My Journal</h1>
+const firebaseConfig = {
+  apiKey: "AIzaSyABzc3PolF7g-lKxD4k5zSJ6nLy00Ht5KA",
+  authDomain: "journal-app-82186.firebaseapp.com",
+  projectId: "journal-app-82186",
+  storageBucket: "journal-app-82186.appspot.com",
+  messagingSenderId: "487287603216",
+  appId: "1:487287603216:web:0a079be3488fb638800a95",
+  measurementId: "G-SBP78JBDMG"
+};
 
-  <input type="text" id="titleInput" placeholder="Title">
-  <textarea id="contentTextarea" placeholder="Write your journal here..."></textarea>
-  <button id="saveBtn">Save Journal</button>
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  <h2>Saved Journals</h2>
-  <div id="journalList"></div>
 
-  <!-- ======= Firebase SDKs ======= -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
 
-  <!-- ======= Your service.js ======= -->
-  <script src="service.js"></script>
-</body>
-</html>
+/* ===============================
+   2. SAVE JOURNAL TO FIRESTORE
+================================*/
 
+async function saveJournalToFirebase(title, content) {
+  await db.collection("journals").add({
+    title: title,
+    content: content,
+    createdAt: new Date()
+  });
+
+  alert("Journal saved permanently!");
+}
+
+
+
+/* ===============================
+   3. LOAD JOURNALS FROM FIRESTORE
+================================*/
+
+async function loadJournalsFromFirebase() {
+  const snapshot = await db.collection("journals")
+    .orderBy("createdAt", "desc")
+    .get();
+
+  let html = "";
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+
+    html += `
+      <div class="entry">
+        <h3>${data.title}</h3>
+        <p>${data.content}</p>
+        <small>${data.createdAt.toDate().toLocaleString()}</small>
+      </div>
+    `;
+  });
+
+  document.getElementById("journalList").innerHTML = html;
+}
+
+
+
+/* ===============================
+   4. CONNECT SAVE BUTTON
+================================*/
+
+document.getElementById("saveBtn").addEventListener("click", () => {
+
+  const title = document.getElementById("titleInput").value.trim();
+  const content = document.getElementById("contentTextarea").value.trim();
+
+  if (title === "" || content === "") {
+    alert("Please fill both title and content");
+    return;
+  }
+
+  saveJournalToFirebase(title, content);
+
+  // Clear fields after save
+  document.getElementById("titleInput").value = "";
+  document.getElementById("contentTextarea").value = "";
+
+  // Reload list
+  loadJournalsFromFirebase();
+});
+
+
+/* ===============================
+   5. LOAD JOURNALS ON PAGE LOAD
+================================*/
+
+window.onload = () => {
+  loadJournalsFromFirebase();
+};
