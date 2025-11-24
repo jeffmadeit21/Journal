@@ -1,95 +1,38 @@
-/* ===============================
-   1. FIREBASE INITIALIZATION
-================================*/
-
 const firebaseConfig = {
-  apiKey: "AIzaSyABzc3PolF7g-lKxD4k5zSJ6nLy00Ht5KA",
-  authDomain: "journal-app-82186.firebaseapp.com",
-  projectId: "journal-app-82186",
-  storageBucket: "journal-app-82186.appspot.com",
-  messagingSenderId: "487287603216",
-  appId: "1:487287603216:web:0a079be3488fb638800a95",
-  measurementId: "G-SBP78JBDMG"
+  apiKey: "AIzaSyDYkvNf6KSrfF2MAIKFGFiksEnCClwycHg",
+  authDomain: "my-journal-app-646ae.firebaseapp.com",
+  projectId: "my-journal-app-646ae",
+  storageBucket: "my-journal-app-646ae.appspot.com",
+  messagingSenderId: "772603221141",
+  appId: "1:772603221141:web:de0e97735f23e9168cc2fc"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-
-
-/* ===============================
-   2. SAVE JOURNAL TO FIRESTORE
-================================*/
-
-async function saveJournalToFirebase(title, content) {
-  await db.collection("journals").add({
-    title: title,
-    content: content,
-    createdAt: new Date()
-  });
-
-  alert("Journal saved permanently!");
-}
-
-
-
-/* ===============================
-   3. LOAD JOURNALS FROM FIRESTORE
-================================*/
-
-async function loadJournalsFromFirebase() {
-  const snapshot = await db.collection("journals")
-    .orderBy("createdAt", "desc")
-    .get();
-
-  let html = "";
-
-  snapshot.forEach(doc => {
-    const data = doc.data();
-
-    html += `
-      <div class="entry">
-        <h3>${data.title}</h3>
-        <p>${data.content}</p>
-        <small>${data.createdAt.toDate().toLocaleString()}</small>
-      </div>
-    `;
-  });
-
-  document.getElementById("journalList").innerHTML = html;
-}
-
-
-
-/* ===============================
-   4. CONNECT SAVE BUTTON
-================================*/
-
-document.getElementById("saveBtn").addEventListener("click", () => {
-
+document.getElementById("saveBtn").addEventListener("click", async () => {
   const title = document.getElementById("titleInput").value.trim();
   const content = document.getElementById("contentTextarea").value.trim();
 
-  if (title === "" || content === "") {
-    alert("Please fill both title and content");
+  if (!title || !content) {
+    alert("Please fill both fields");
     return;
   }
 
-  saveJournalToFirebase(title, content);
+  try {
+    await db.collection("journals").add({
+      title: title,
+      content: content,
+      timestamp: new Date(),
+    });
 
-  // Clear fields after save
-  document.getElementById("titleInput").value = "";
-  document.getElementById("contentTextarea").value = "";
+    alert("Journal saved successfully!");
+    document.getElementById("titleInput").value = "";
+    document.getElementById("contentTextarea").value = "";
 
-  // Reload list
-  loadJournalsFromFirebase();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to save journal");
+  }
 });
 
-
-/* ===============================
-   5. LOAD JOURNALS ON PAGE LOAD
-================================*/
-
-window.onload = () => {
-  loadJournalsFromFirebase();
-};
